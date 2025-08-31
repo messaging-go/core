@@ -4,12 +4,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/messaging-go/core/middlewares/backoff/policies"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/messaging-go/core/middlewares/backoff/policies"
 )
 
 func TestJitter(t *testing.T) {
+	t.Parallel()
 	t.Run("when count is 1", func(t *testing.T) {
+		t.Parallel()
+
 		base := 1 * time.Second
 		p := policies.Jitter(policies.Constant(base), 0.5)
 
@@ -20,6 +24,8 @@ func TestJitter(t *testing.T) {
 		}
 	})
 	t.Run("when count is 0", func(t *testing.T) {
+		t.Parallel()
+
 		base := 1 * time.Second
 		p := policies.Jitter(policies.Constant(base), 0.5)
 

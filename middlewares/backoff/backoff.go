@@ -20,8 +20,10 @@ func (b *backoff[T]) Process(ctx context.Context, item T, next func(ctx context.
 	if delay == 0 {
 		return b.trackError(next(ctx, item))
 	}
+
 	timer := time.NewTimer(delay)
 	defer timer.Stop()
+
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("backoff aborted due to context cancellation: %w", ctx.Err())
@@ -35,8 +37,9 @@ func (b *backoff[T]) trackError(err error) error {
 	if err == nil {
 		b.errorCounter = max(0, b.errorCounter-1)
 
-		return err
+		return nil
 	}
+
 	b.errorCounter = min(b.maxErrorTracking, b.errorCounter+1)
 
 	return err

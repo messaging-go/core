@@ -11,13 +11,13 @@ func (c *core[MessageType]) Run(processor Processor[MessageType]) {
 		return processor(ctx, item)
 	}))
 
-	for c.shouldContinue == true {
+	for c.shouldContinue {
 		ctx := context.Background()
-		_ = c.chain.Process(ctx, nil)
+		c.resultsObserver(c.chain.Process(ctx, nil))
 	}
 }
 
-func (c *core[MessageType]) AddMiddleware(middleware middleware.Middleware[*MessageType, error]) MessageProcessor[MessageType] {
+func (c *core[MessageType]) AddMiddleware(middleware Middleware[*MessageType]) MessageProcessor[MessageType] {
 	c.chain.AddMiddleware(middleware)
 
 	return c
@@ -27,9 +27,10 @@ func (c *core[MessageType]) Stop() {
 	c.shouldContinue = false
 }
 
-func New[MessageType any]() MessageProcessor[MessageType] {
+func New[MessageType any](resultsObserver func(error)) MessageProcessor[MessageType] {
 	return &core[MessageType]{
-		chain:          middleware.New[*MessageType, error](),
-		shouldContinue: true,
+		chain:           middleware.New[*MessageType, error](),
+		shouldContinue:  true,
+		resultsObserver: resultsObserver,
 	}
 }

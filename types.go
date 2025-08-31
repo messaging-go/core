@@ -11,13 +11,14 @@ type Middleware[T any] interface {
 }
 
 type core[MessageType any] struct {
-	chain          middleware.Processor[*MessageType, error]
-	shouldContinue bool
+	chain           middleware.Processor[*MessageType, error]
+	shouldContinue  bool
+	resultsObserver func(error)
 }
 type Processor[MessageType any] func(ctx context.Context, item *MessageType) error
 
 type MessageProcessor[MessageType any] interface {
-	AddMiddleware(middleware middleware.Middleware[*MessageType, error]) MessageProcessor[MessageType]
+	AddMiddleware(middleware Middleware[*MessageType]) MessageProcessor[MessageType]
 	Stop()
 	Run(processor Processor[MessageType])
 }

@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/messaging-go/core"
-	"github.com/messaging-go/core/test/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+
+	"github.com/messaging-go/core"
+	"github.com/messaging-go/core/test/mocks"
 )
 
 func TestNew(t *testing.T) {
@@ -21,6 +22,7 @@ func TestNew(t *testing.T) {
 			Process(gomock.Any(), gomock.Any(), gomock.Any()).
 			DoAndReturn(func(ctx context.Context, i *int, next func(context.Context, *int) error) error {
 				assert.Nil(t, i)
+
 				mockMessage := 1
 
 				return next(ctx, &mockMessage)
@@ -30,6 +32,7 @@ func TestNew(t *testing.T) {
 			Process(gomock.Any(), gomock.Any(), gomock.Any()).
 			DoAndReturn(func(ctx context.Context, i *int, next func(context.Context, *int) error) error {
 				assert.Nil(t, i)
+
 				mockMessage := 2
 
 				return next(ctx, &mockMessage)
@@ -39,6 +42,7 @@ func TestNew(t *testing.T) {
 			Process(gomock.Any(), gomock.Any(), gomock.Any()).
 			DoAndReturn(func(ctx context.Context, i *int, next func(context.Context, *int) error) error {
 				assert.Nil(t, i)
+
 				mockMessage := 3
 
 				return next(ctx, &mockMessage)
@@ -51,17 +55,22 @@ func TestNew(t *testing.T) {
 
 				return next(ctx, nil)
 			}).AnyTimes()
-		processor := core.New[int]()
+		processor := core.New[int](func(err error) {
+			assert.NoError(t, err)
+		})
 		processor.AddMiddleware(mockMessageInjector)
+
 		go func() {
 			time.Sleep(10 * time.Millisecond)
 			processor.Stop()
 		}()
+
 		var receivedMessages []int
 		processor.Run(func(ctx context.Context, item *int) error {
 			if item == nil {
 				return nil
 			}
+
 			receivedMessages = append(receivedMessages, *item)
 
 			return nil

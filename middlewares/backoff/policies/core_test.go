@@ -4,11 +4,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/messaging-go/core/middlewares/backoff/policies"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/messaging-go/core/middlewares/backoff/policies"
 )
 
 func TestConstant(t *testing.T) {
+	t.Parallel()
+
 	constantPolicy := policies.Constant(2 * time.Second)
 	assert.Equal(t, 0*time.Second, constantPolicy(0))
 	assert.Equal(t, 2*time.Second, constantPolicy(1))
@@ -17,6 +20,8 @@ func TestConstant(t *testing.T) {
 }
 
 func TestLinear(t *testing.T) {
+	t.Parallel()
+
 	linearPolicy := policies.Linear(500 * time.Millisecond)
 	assert.Equal(t, 0*time.Second, linearPolicy(0))
 	assert.Equal(t, 500*time.Millisecond, linearPolicy(1))
@@ -24,6 +29,8 @@ func TestLinear(t *testing.T) {
 }
 
 func TestExponential(t *testing.T) {
+	t.Parallel()
+
 	exponentialPolicy := policies.Exponential(2, 200*time.Millisecond, 5*time.Second)
 	assert.Equal(t, 0*time.Second, exponentialPolicy(0))
 	assert.Equal(t, 200*time.Millisecond, exponentialPolicy(1))  // 200ms * 2^0
@@ -33,6 +40,8 @@ func TestExponential(t *testing.T) {
 }
 
 func TestFibonacci(t *testing.T) {
+	t.Parallel()
+
 	fibonacciPolicy := policies.Fibonacci(100*time.Millisecond, 2*time.Second)
 	assert.Equal(t, 0*time.Second, fibonacciPolicy(0))        // 0
 	assert.Equal(t, 100*time.Millisecond, fibonacciPolicy(1)) // Fib(1) = 1

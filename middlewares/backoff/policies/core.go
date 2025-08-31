@@ -17,46 +17,49 @@ func Linear(base time.Duration) Policy {
 }
 
 // Constant returns the same duration every time.
-func Constant(d time.Duration) Policy {
+func Constant(duration time.Duration) Policy {
 	return func(count int) time.Duration {
 		if count <= 0 {
 			return 0
 		}
 
-		return d
+		return duration
 	}
 }
 
 // Exponential doubles each time: base * 2^(count-1).
-func Exponential(exponent float64, base time.Duration, max time.Duration) Policy {
+func Exponential(exponent float64, base time.Duration, maxDuration time.Duration) Policy {
 	return func(count int) time.Duration {
 		if count <= 0 {
 			return 0
 		}
-		d := float64(base) * math.Pow(exponent, float64(count-1))
-		if max > 0 && time.Duration(d) > max {
-			return max
+
+		duration := float64(base) * math.Pow(exponent, float64(count-1))
+		if maxDuration <= 0 {
+			return time.Duration(duration)
 		}
 
-		return time.Duration(d)
+		return min(time.Duration(duration), maxDuration)
 	}
 }
 
 // Fibonacci backoff: base * Fib(count).
-func Fibonacci(base time.Duration, max time.Duration) Policy {
+func Fibonacci(base time.Duration, maxDuration time.Duration) Policy {
 	return func(count int) time.Duration {
 		if count <= 0 {
 			return 0
 		}
-		a, b := 0, 1
+
+		first, second := 0, 1
 		for i := 0; i < count; i++ {
-			a, b = b, a+b
-		}
-		d := time.Duration(a) * base
-		if max > 0 && d > max {
-			return max
+			first, second = second, first+second
 		}
 
-		return d
+		duration := time.Duration(first) * base
+		if maxDuration <= 0 {
+			return duration
+		}
+
+		return min(duration, maxDuration)
 	}
 }

@@ -14,7 +14,7 @@ type shutdown[T any] struct {
 	sigCh        <-chan os.Signal
 }
 
-// Process spawns a short-lived goroutine to cancel ctx if shutdown arrives
+// Process spawns a short-lived goroutine to cancel ctx if shutdown arrives.
 func (s *shutdown[T]) Process(ctx context.Context, item T, next func(ctx context.Context, item T) error) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -36,7 +36,7 @@ func (s *shutdown[T]) Process(ctx context.Context, item T, next func(ctx context
 	return next(ctx, item)
 }
 
-// Middleware creates the shutdown middleware, sets up signal.Notify once
+// Middleware creates the shutdown middleware, sets up signal.Notify once.
 func Middleware[T any](c core.MessageProcessor[T]) core.Middleware[T] {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
@@ -47,7 +47,10 @@ func Middleware[T any](c core.MessageProcessor[T]) core.Middleware[T] {
 	}
 }
 
-func MiddlewareWithStopSignalChannel[T any](signalChannel chan os.Signal, c core.MessageProcessor[T]) core.Middleware[T] {
+func MiddlewareWithStopSignalChannel[T any](
+	signalChannel chan os.Signal,
+	c core.MessageProcessor[T],
+) core.Middleware[T] {
 	return &shutdown[T]{
 		coreInstance: c,
 		sigCh:        signalChannel,

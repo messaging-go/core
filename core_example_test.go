@@ -35,17 +35,25 @@ func newMockKafkaConsumer() core.Middleware[*int] {
 }
 
 func ExampleNew() {
-	processor := core.New[int]()
+	processor := core.New[int](func(err error) {
+		if err != nil {
+			panic(err)
+		}
+	})
 	processor.AddMiddleware(newMockKafkaConsumer())
+
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		processor.Stop()
 	}()
+
 	processor.Run(func(ctx context.Context, item *int) error {
 		if item == nil {
 			return nil
 		}
+
 		fmt.Println(*item)
+
 		return nil
 	})
 	// Output: 1
