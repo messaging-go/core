@@ -19,7 +19,8 @@ func TestMiddleware(t *testing.T) {
 		t.Parallel()
 
 		mw := gracefulshutdown.Middleware[int](nil)
-		assert.NoError(t, mw.Process(t.Context(), 0, func(ctx context.Context, item int) error {
+		item := 0
+		assert.NoError(t, mw.Process(t.Context(), &item, func(ctx context.Context, item *int) error {
 			return nil
 		}))
 	})
@@ -27,7 +28,8 @@ func TestMiddleware(t *testing.T) {
 		t.Parallel()
 
 		mw := gracefulshutdown.Middleware[int](nil)
-		assert.Error(t, mw.Process(t.Context(), 0, func(ctx context.Context, item int) error {
+		item := 0
+		assert.Error(t, mw.Process(t.Context(), &item, func(ctx context.Context, item *int) error {
 			return assert.AnError
 		}))
 	})
@@ -44,7 +46,8 @@ func TestMiddleware(t *testing.T) {
 
 		// Start Process in a goroutine so we can send the "signal"
 		go func() {
-			err := middleware.Process(t.Context(), 1, func(ctx context.Context, item int) error {
+			item := 1
+			err := middleware.Process(t.Context(), &item, func(ctx context.Context, item *int) error {
 				<-ctx.Done() // wait for cancellation
 
 				called = true
