@@ -9,7 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/messaging-go/core"
-	"github.com/messaging-go/core/internal/test/mocks"
+	"github.com/messaging-go/core/test/mocks"
 )
 
 func TestNew(t *testing.T) {
