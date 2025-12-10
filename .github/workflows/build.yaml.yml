@@ -27,7 +27,7 @@ jobs:
       - run: go test -tags=integration ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
       - name: sonarcloud-scan
         uses: sonarsource/sonarqube-scan-action@v6
-        if: false # skip until token fix token issues
+        if: false # skip until fix token issues
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
