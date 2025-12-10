@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	"github.com/messaging-go/core/internal/test/mocks"
 	"github.com/messaging-go/core/middlewares/gracefulshutdown"
-	"github.com/messaging-go/core/test/mocks"
 )
 
 func TestMiddleware(t *testing.T) {
