@@ -24,7 +24,7 @@ jobs:
           go-version-file: go.mod
       - run: go mod download
       - run: make generate
-      - run: go test -tags=integration ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+      - run: go test -race -tags=integration ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
       - name: sonarcloud-scan
         uses: sonarsource/sonarqube-scan-action@v6
         if: false # skip until fix token issues
