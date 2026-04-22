@@ -3,6 +3,7 @@ package gracefulshutdown_test
 import (
 	"context"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -42,7 +43,7 @@ func TestMiddleware(t *testing.T) {
 
 		middleware := gracefulshutdown.MiddlewareWithStopSignalChannel[int](signalCh, mockCore)
 
-		called := false
+		var called atomic.Bool
 
 		// Start Process in a goroutine so we can send the "signal"
 		go func() {
@@ -50,7 +51,7 @@ func TestMiddleware(t *testing.T) {
 			err := middleware.Process(t.Context(), &item, func(ctx context.Context, item *int) error {
 				<-ctx.Done() // wait for cancellation
 
-				called = true
+				called.Store(true)
 
 				return ctx.Err()
 			})
@@ -62,6 +63,6 @@ func TestMiddleware(t *testing.T) {
 
 		time.Sleep(50 * time.Millisecond) // give goroutine a moment to react
 
-		assert.True(t, called)
+		assert.True(t, called.Load())
 	})
 }

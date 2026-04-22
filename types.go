@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"sync/atomic"
 
 	"github.com/messaging-go/core/internal/middleware"
 )
@@ -12,7 +13,7 @@ type Middleware[T any] interface {
 
 type core[MessageType any] struct {
 	chain           middleware.Processor[*MessageType, error]
-	shouldContinue  bool
+	shouldContinue  atomic.Bool
 	resultsObserver func(error)
 }
 type Processor[MessageType any] func(ctx context.Context, item *MessageType) error
