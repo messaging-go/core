@@ -11,9 +11,13 @@ func (c *core[MessageType]) Run(processor Processor[MessageType]) {
 		return processor(ctx, item)
 	}))
 
-	for c.shouldContinue.Load() {
-		ctx := context.Background()
-		c.resultsObserver(c.chain.Process(ctx, nil))
+	for {
+		select {
+		case <-c.closeRequest:
+			return
+		default:
+			c.resultsObserver(c.chain.Process(context.Background(), nil))
+		}
 	}
 }
 
@@ -24,15 +28,13 @@ func (c *core[MessageType]) AddMiddleware(middleware Middleware[*MessageType]) M
 }
 
 func (c *core[MessageType]) Stop() {
-	c.shouldContinue.Store(false)
+	close(c.closeRequest)
 }
 
 func New[MessageType any](resultsObserver func(error)) MessageProcessor[MessageType] {
-	instance := &core[MessageType]{
+	return &core[MessageType]{
 		chain:           middleware.New[*MessageType, error](),
 		resultsObserver: resultsObserver,
+		closeRequest:    make(chan struct{}),
 	}
-	instance.shouldContinue.Store(true)
-
-	return instance
 }
