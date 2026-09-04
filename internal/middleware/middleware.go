@@ -32,8 +32,9 @@ func (r *stack[IN, OUT]) Process(ctx context.Context, options IN) OUT {
 	// a middleware may call its `next` zero, one, or many times (retries), and
 	// from several goroutines at once (fan-out), without corrupting the chain.
 	var chain middlewareChain[IN, OUT]
+
 	chain = func(index int) middlewareHandler[IN, OUT] {
-		return func(c context.Context, item IN) OUT {
+		return func(ctx context.Context, item IN) OUT {
 			if index >= len(r.middlewares) {
 				panic(fmt.Sprintf(
 					"middleware: next() called past the end of the chain (%d middleware(s)); "+
@@ -42,7 +43,7 @@ func (r *stack[IN, OUT]) Process(ctx context.Context, options IN) OUT {
 				))
 			}
 
-			return r.middlewares[index].Process(c, item, chain(index+1))
+			return r.middlewares[index].Process(ctx, item, chain(index+1))
 		}
 	}
 

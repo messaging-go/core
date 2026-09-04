@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff/v7"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/cenkalti/backoff/v7"
 	"github.com/messaging-go/core/internal/middleware"
 )
 
@@ -59,6 +59,7 @@ func TestNew(t *testing.T) {
 	})
 	t.Run("with custom retry middleware", func(t *testing.T) {
 		t.Parallel()
+
 		tries := 3
 		pipeline := middleware.New[int, error]()
 		pipeline.AddMiddleware(retryMiddleware{})
@@ -67,6 +68,7 @@ func TestNew(t *testing.T) {
 			if tries == 0 {
 				return nil
 			}
+
 			return assert.AnError
 		}))
 		assert.NoError(t, pipeline.Process(t.Context(), 1))
@@ -78,6 +80,7 @@ type retryMiddleware struct{}
 func (r retryMiddleware) Process(ctx context.Context, item int, next func(ctx context.Context, item int) error) error {
 	_, err := backoff.Retry[any](ctx, func() (any, error) {
 		fmt.Println("retry...")
+
 		return nil, next(ctx, item)
 	}, backoff.WithBackOff(backoff.NewConstantBackOff(time.Millisecond*20)))
 
