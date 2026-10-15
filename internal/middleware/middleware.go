@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"sync"
 )
 
 type Middleware[IN any, OUT any] interface {
@@ -20,9 +21,13 @@ type middlewareChain[IN, OUT any] func(index int) middlewareHandler[IN, OUT]
 
 type stack[IN any, OUT any] struct {
 	middlewares []Middleware[IN, OUT]
+	mutex       sync.Mutex
 }
 
 func (r *stack[IN, OUT]) AddMiddleware(mw Middleware[IN, OUT]) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
 	r.middlewares = append(r.middlewares, mw)
 }
 
@@ -51,5 +56,7 @@ func (r *stack[IN, OUT]) Process(ctx context.Context, options IN) OUT {
 }
 
 func New[IN, OUT any]() Processor[IN, OUT] {
-	return &stack[IN, OUT]{}
+	return &stack[IN, OUT]{
+		mutex: sync.Mutex{},
+	}
 }
