@@ -3,6 +3,7 @@ package middleware_test
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -43,6 +44,25 @@ func TestNew(t *testing.T) {
 		pipeline.AddMiddleware(finalMiddleware)
 		assert.Equal(t, 36, pipeline.Process(context.Background(), 1))
 		assert.Equal(t, 100, pipeline.Process(context.Background(), 5))
+	})
+
+	t.Run("with concurrent middleware registration", func(t *testing.T) {
+		t.Parallel()
+
+		pipeline := middleware.New[int, int]()
+
+		var group sync.WaitGroup
+		for range 100 {
+			group.Go(func() {
+				pipeline.AddMiddleware(customMw{})
+			})
+		}
+
+		group.Wait()
+		pipeline.AddMiddleware(middleware.FinalMiddleware[int, int](func(ctx context.Context, item int) int {
+			return item
+		}))
+		assert.Equal(t, 500, pipeline.Process(t.Context(), 0))
 	})
 
 	t.Run("with context values", func(t *testing.T) {
